@@ -101,7 +101,7 @@ export default function Home() {
       <Stack
         direction="column"
         width={isMobile ? '100vw' : '500px'}
-        height="100vh"
+        height="80vh"
         sx={{
           backgroundColor: 'white',
           boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.3)',
