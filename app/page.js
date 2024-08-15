@@ -1,6 +1,9 @@
 'use client'
 import { useState, useEffect, useRef } from "react"
-import { Box, Button, Stack, TextField } from '@mui/material'
+import { Box, Button, Stack, TextField, CircularProgress, Typography, useMediaQuery } from '@mui/material'
+import { color, motion } from 'framer-motion'
+import Image from "next/image"
+import photo from './pfp.png'
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -11,16 +14,21 @@ export default function Home() {
   ])
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 500px')
 
   const sendMessage = async () => {
-    if (!message.trim()) return;  // Don't send empty messages
-  
+    if (!message.trim()) return;  
+    
+    setIsLoading(true)
     setMessage('')
     setMessages((messages) => [
       ...messages,
       { role: 'user', content: message },
       { role: 'assistant', content: '' },
     ])
+
+    setIsTyping(true)
   
     try {
       const response = await fetch('/api/chat', {
@@ -57,6 +65,9 @@ export default function Home() {
         ...messages,
         { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
       ])
+    } finally {
+      setIsLoading(false)
+      setIsTyping(false)
     }
   }
 
@@ -85,15 +96,48 @@ export default function Home() {
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
+      bgcolor="#f5f5f5"
     >
       <Stack
-        direction={'column'}
-        width="500px"
-        height="700px"
-        border="1px solid black"
-        p={2}
-        spacing={3}
+        direction="column"
+        width={isMobile ? '100vw' : '500px'}
+        height="100vh"
+        sx={{
+          backgroundColor: 'white',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.3)',
+          borderRadius: 8,
+          padding: 2,
+          spacing: 3,
+        }}
       >
+        <Stack 
+        direction={'column'}
+        >
+          <Box 
+          width="100%" 
+          height="100%"
+          overflow="hidden"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          p={1}
+          >
+            <Image 
+              src={photo} 
+              alt="Profile Picture" 
+              width={50} 
+              height={50} 
+              objectFit="cover"
+              style={{ borderRadius: '50%' }}
+            />
+          </Box>
+          <Typography variant="h6" align="center">
+            Soccerates
+          </Typography>
+          <Typography variant="subtitle" align="center" gutterBottom>
+            The Soccer Expert AI
+          </Typography>
+        </Stack>
         <Stack
           direction={'column'}
           spacing={2}
@@ -102,28 +146,53 @@ export default function Home() {
           maxHeight="100%"
         >
           {messages.map((message, index) => (
-            <Box
+            <motion.div
               key={index}
-              display="flex"
-              justifyContent={
-                message.role === 'assistant' ? 'flex-start' : 'flex-end'
-              }
+              initial={{ opacity: 0, x: message.role === 'assistant' ? -50 : 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
             >
               <Box
-                bgcolor={
-                  message.role === 'assistant'
-                    ? 'primary.main'
-                    : 'secondary.main'
+                display="flex"
+                justifyContent={
+                  message.role === 'assistant' ? 'flex-start' : 'flex-end'
                 }
-                color="white"
-                borderRadius={16}
-                p={3}
               >
-                {message.content}
+                <Box
+                  bgcolor={
+                    message.role === 'assistant'
+                      ? '#d8d8d8' // Primary color
+                      : '#218aff' // Secondary color
+                  }
+                  color={
+                    message.role === 'assistant'
+                      ? 'black'
+                      : 'white'
+                  }
+                  borderRadius={8}
+                  p={2.5}
+                  maxWidth="80%"
+                  boxShadow="0px 2px 10px rgba(0, 0, 0, 0.1)"
+                >
+                  {message.content}
+                </Box>
               </Box>
-            </Box>
+            </motion.div>
           ))}
           <div ref={messagesEndRef} />
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
+              style={{ display: 'flex', justifyContent: 'flex-start', padding: '8px' }}
+            >
+              <Box display="flex" alignItems="center">
+                <CircularProgress size={20} />
+                <Box ml={2} color="grey.500">Assistant is typing...</Box>
+              </Box>
+            </motion.div>
+          )}
         </Stack>
         <Stack direction={'row'} spacing={2}>
           <TextField
@@ -133,6 +202,7 @@ export default function Home() {
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
+            variant="outlined"
           />
           <Button 
             variant="contained" 
@@ -146,209 +216,3 @@ export default function Home() {
     </Box>
   )
 }
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-// 'use client'
-// import { useState, useEffect, useRef } from "react"
-// import { Box, Button, Stack, TextField, CircularProgress, Avatar } from '@mui/material'
-// import SendIcon from '@mui/icons-material/Send'
-
-// export default function Home() {
-//   const [messages, setMessages] = useState([
-//     {
-//       role: 'assistant',
-//       content: "Hello!! I am your football (soccer) expert assistant. How can I help you today?"
-//     },
-//   ])
-//   const [message, setMessage] = useState('')
-//   const [isLoading, setIsLoading] = useState(false)
-//   const [isTyping, setIsTyping] = useState(false)
-
-//   const sendMessage = async () => {
-//     if (!message.trim()) return;  // Don't send empty messages
-  
-//     // Update the message state to show the user's message
-//     const newMessages = [
-//       ...messages,
-//       { role: 'user', content: message },
-//     ]
-//     setMessages(newMessages)
-//     setMessage('')  // Clear the input field
-//     setIsTyping(true)  // Show typing indicator
-  
-//     try {
-//       const response = await fetch('/api/chat', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify(newMessages),
-//       })
-  
-//       if (!response.ok) {
-//         throw new Error('Network response was not ok')
-//       }
-  
-//       const reader = response.body.getReader()
-//       const decoder = new TextDecoder()
-  
-//       let assistantMessage = ''
-//       while (true) {
-//         const { done, value } = await reader.read()
-//         if (done) break
-//         const text = decoder.decode(value, { stream: true })
-//         assistantMessage += text
-//         setMessages((prevMessages) => [
-//           ...prevMessages.slice(0, prevMessages.length - 1),
-//           { role: 'assistant', content: assistantMessage },
-//         ])
-//       }
-//     } catch (error) {
-//       console.error('Error:', error)
-//       setMessages((prevMessages) => [
-//         ...prevMessages,
-//         { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
-//       ])
-//     } finally {
-//       setIsTyping(false)  // Hide typing indicator
-//     }
-//   }
-
-//   const handleKeyPress = (event) => {
-//     if (event.key === 'Enter' && !event.shiftKey) {
-//       event.preventDefault()
-//       sendMessage()
-//     }
-//   }
-
-//   const messagesEndRef = useRef(null)
-
-//   const scrollToBottom = () => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-//   }
-
-//   useEffect(() => {
-//     scrollToBottom()
-//   }, [messages])
-
-//   return (
-//     <Box
-//       width="100vw"
-//       height="100vh"
-//       display="flex"
-//       flexDirection="column"
-//       justifyContent="center"
-//       alignItems="center"
-//       bgcolor="#f0f2f5"
-//     >
-//       <Stack
-//         direction={'column'}
-//         width="100%"
-//         maxWidth="500px"
-//         height="100%"
-//         maxHeight="700px"
-//         bgcolor="white"
-//         borderRadius={8}
-//         boxShadow={3}
-//         p={2}
-//         spacing={3}
-//       >
-//         <Stack
-//           direction={'column'}
-//           spacing={2}
-//           flexGrow={1}
-//           overflow="auto"
-//           maxHeight="100%"
-//         >
-//           {messages.map((message, index) => (
-//             <Box
-//               key={index}
-//               display="flex"
-//               alignItems="center"
-//               justifyContent={
-//                 message.role === 'assistant' ? 'flex-start' : 'flex-end'
-//               }
-//             >
-//               {message.role === 'assistant' && (
-//                 <Avatar sx={{ bgcolor: 'primary.main', marginRight: 1 }}>A</Avatar>
-//               )}
-//               <Box
-//                 position="relative"
-//                 maxWidth="80%"
-//                 bgcolor={
-//                   message.role === 'assistant'
-//                     ? 'primary.main'
-//                     : 'secondary.main'
-//                 }
-//                 color="white"
-//                 borderRadius={2}
-//                 p={2}
-//                 sx={{
-//                   '&::after': {
-//                     content: '""',
-//                     position: 'absolute',
-//                     top: '50%',
-//                     left: message.role === 'assistant' ? '-10px' : 'auto',
-//                     right: message.role === 'user' ? '-10px' : 'auto',
-//                     transform: 'translateY(-50%)',
-//                     borderWidth: '10px',
-//                     borderStyle: 'solid',
-//                     borderColor: message.role === 'assistant' 
-//                       ? 'transparent transparent transparent #1976d2' 
-//                       : 'transparent #dc004e transparent transparent',
-//                   }
-//                 }}
-//               >
-//                 {message.content}
-//               </Box>
-//               {message.role === 'user' && (
-//                 <Avatar sx={{ bgcolor: 'secondary.main', marginLeft: 1 }}>U</Avatar>
-//               )}
-//             </Box>
-//           ))}
-//           {isTyping && (
-//             <Box display="flex" alignItems="center" justifyContent="flex-start">
-//               <Avatar sx={{ bgcolor: 'primary.main', marginRight: 1 }}>A</Avatar>
-//               <Box
-//                 maxWidth="80%"
-//                 bgcolor="primary.main"
-//                 color="white"
-//                 borderRadius={2}
-//                 p={2}
-//               >
-//                 <CircularProgress size={20} color="inherit" />
-//               </Box>
-//             </Box>
-//           )}
-//           <div ref={messagesEndRef} />
-//         </Stack>
-//         <Stack direction={'row'} spacing={2}>
-//           <TextField
-//             label="Type your message..."
-//             fullWidth
-//             value={message}
-//             onChange={(e) => setMessage(e.target.value)}
-//             onKeyPress={handleKeyPress}
-//             disabled={isLoading}
-//             variant="outlined"
-//           />
-//           <Button 
-//             variant="contained" 
-//             onClick={sendMessage}
-//             disabled={isLoading}
-//             endIcon={<SendIcon />}
-//           >
-//             Send
-//           </Button>
-//         </Stack>
-//       </Stack>
-//     </Box>
-//   )
-// }
