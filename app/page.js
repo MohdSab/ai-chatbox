@@ -213,6 +213,12 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
+      <Typography
+      p={1}
+      variant="subtitle"
+      alignItems='center'>
+        By <a href='https://msabagh.ca/'>Mohamad Sabagh</a> hosted on AWS (EC2)
+      </Typography>
     </Box>
   )
 }
